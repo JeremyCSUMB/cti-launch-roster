@@ -1,0 +1,15 @@
+{
+  "timeZone": "America/Los_Angeles",
+  "dependencies": {
+    "libraries": [
+      {
+        "userSymbol": "CanvasGradebook",
+        "version": "0",
+        "libraryId": "18J7JRhan-P_sFIrGZ4cB5JFBDphASp-36By-N5iJ5-qH9DvBPYg_iibh",
+        "developmentMode": true
+      }
+    ]
+  },
+  "exceptionLogging": "STACKDRIVER",
+  "runtimeVersion": "V8"
+}
