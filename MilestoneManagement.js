@@ -88,3 +88,61 @@ function updateCurrentMilestones() {
         }
     }
 }
+
+function updateForIncompleteAssignment() {
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var ui = SpreadsheetApp.getUi(); // For user interaction
+
+    // Prompt for assignment name
+    var response = ui.prompt('Enter the assignment name from the Canvas Gradebook:');
+    var assignmentName = response.getResponseText().trim().replace(/\s+/g, ' ');
+    if (!assignmentName) {
+        ui.alert('No assignment name entered. Operation cancelled.');
+        return;
+    }
+
+    // Access sheets
+    var canvasGradebookSheet = ss.getSheetByName('Canvas Gradebook');
+    var canvasData = canvasGradebookSheet.getDataRange().getValues();
+    var idIndexCanvas = canvasData[0].indexOf('ID'); // Get the index of the 'ID' column
+
+    // Standardize assignment names
+    var standardizedCanvasAssignments = canvasData[0].map(function(assignment) {
+        return assignment.trim().replace(/\s+/g, ' ');
+    });
+
+    var assignmentIndexCanvas = standardizedCanvasAssignments.indexOf(assignmentName);
+    if (assignmentIndexCanvas === -1) {
+        ui.alert('Assignment not found in Canvas Gradebook. Check name and try again.');
+        return;
+    }
+
+    // Access Spring 2024 sheet and prepare new sheet
+    var springSheet = ss.getSheetByName('Spring 2024');
+    var springData = springSheet.getDataRange().getValues();
+    var incompleteSheetName = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd') + ' - Incomplete ' + assignmentName;
+    var incompleteSheet = ss.getSheetByName(incompleteSheetName) || ss.insertSheet(incompleteSheetName);
+    incompleteSheet.clear(); // Clear existing data
+    incompleteSheet.appendRow(['Canvas ID', 'First Name', 'Last Name', 'Email Address']); // Example headers
+
+    // Iterate over Canvas Gradebook data to find and add students who have not completed the assignment
+    for (var k = 1; k < canvasData.length; k++) {
+        var studentId = canvasData[k][idIndexCanvas];
+        var assignmentCompletion = canvasData[k][assignmentIndexCanvas];
+        if (!assignmentCompletion) { // Check if student has not completed the assignment
+            // Find student in Spring 2024 sheet using ID
+            var studentRow = springData.find(row => row.includes(studentId));
+            if (studentRow) {
+                // Extract desired columns from Spring 2024 sheet for the student
+                var canvasId = studentRow[springData[0].indexOf('Canvas ID')];
+                var firstName = studentRow[springData[0].indexOf('First Name')];
+                var lastName = studentRow[springData[0].indexOf('Last Name')];
+                var email = studentRow[springData[0].indexOf('Email Address')];
+                incompleteSheet.appendRow([canvasId, firstName, lastName, email]); // Add to new sheet
+            }
+        }
+    }
+
+    Logger.log('Incomplete assignment sheet created: ' + incompleteSheetName);
+}
+

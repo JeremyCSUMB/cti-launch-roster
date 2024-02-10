@@ -8,5 +8,6 @@ function onOpen() {
         .addItem('Generate Not Signed Contract List', 'checkSignedContracts')
         .addItem('Generate Deep Work Session Assignments', 'createDeepWorkSessionAssignments')
         .addItem('Generate YAMM Email', 'generateYAMMEmail')
+        .addItem('Generate Not Completed Assignments', 'updateForIncompleteAssignment')
         .addToUi();
 }
