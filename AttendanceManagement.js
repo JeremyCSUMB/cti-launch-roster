@@ -93,3 +93,37 @@ function updateAttendanceRecords(sheet, rowIndex, date, didAttend) {
         lastAttendedCell.setValue(date);
     }
 }
+
+function updateAttendanceAverage() {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Spring 2024');
+  var data = sheet.getDataRange().getValues(); 
+  
+  // Define column headers (modify as needed)
+  var attendedHeader = 'Total # of Attended DW Sessions';
+  var missedHeader = 'Total # of Missed DW Sessions';
+  var averageHeader = 'Attendance Average';
+
+  // Get column indices directly
+  var attendedIndex = data[0].indexOf(attendedHeader);
+  var missedIndex = data[0].indexOf(missedHeader);
+  var averageIndex = data[0].indexOf(averageHeader);
+
+  // Process the data 
+  for (var i = 1; i < data.length; i++) {
+    var attended = data[i][attendedIndex]; 
+    var missed = data[i][missedIndex]; 
+
+    var average;
+    if (attended == 0 && missed == 0) {
+      average = 'N/A';  // Both are 0
+    } else {
+      // Calculate percentage: (attended / (attended + missed)) * 100
+      average = (attended / (attended + missed)); 
+    } 
+
+    // Update with percentage formatting
+    sheet.getRange(i + 1, averageIndex + 1).setValue(average).setNumberFormat('0.00%'); 
+  }
+}
+
+
