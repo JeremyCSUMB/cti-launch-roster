@@ -23,3 +23,4 @@ function extractDayOfWeek(response) {
     Logger.log("No Day of the Week Found in Response: " + response);
     return '';
 }
+

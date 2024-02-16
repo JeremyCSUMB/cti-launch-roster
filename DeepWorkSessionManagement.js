@@ -192,7 +192,7 @@ function determineRoomNumber(location, session) {
     } else if (location === 'CSUDH') {
         return 'NSM A-143';
     } else if (location === 'ECC') {
-        return (session.includes('Monday') || session.includes('Wednesday') || session.includes('Thursday')) ? 'MBA 103' : 'MBA 111';
+        return 'MBA 103';
     } else {
         return 'Room Not Found';
     }
@@ -205,7 +205,8 @@ function mapCSUMBSessionsToRooms(session) {
         'Tuesday': '504-1301',
         'Wednesday': '506-223',
         'Thursday': '506-108',
-        'Friday': '506-108'
+        'Friday': '506-108',
+        'Guided Session': '506-111'
     };
     return sessionToRoomMap[session.split(' ')[0]] || 'Room Not Found';
 }
@@ -217,7 +218,8 @@ function mapHartnellAlisalSessionsToRooms(session) {
         'Tuesday': 'AC C106',
         'Wednesday': 'AC A114',
         'Thursday': 'AC C110',
-        'Friday': 'AC C106'
+        'Friday': 'AC C106',
+        'Guided Session': 'AC 106'
     };
     return sessionToRoomMap[session.split(' ')[0]] || 'Room Not Found';
 }
