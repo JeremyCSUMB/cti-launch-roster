@@ -115,7 +115,7 @@ function updateAttendanceAverage() {
 
     var average;
     if (attended == 0 && missed == 0) {
-      average = 'N/A';  // Both are 0
+      average = '';  // Both are 0
     } else {
       // Calculate percentage: (attended / (attended + missed)) * 100
       average = (attended / (attended + missed)); 
