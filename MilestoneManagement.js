@@ -185,11 +185,11 @@ function generateProgressReport(expectedMilestone) {
 }
 
 function processProgressReport() {
-  generateProgressReport(1);
+  generateProgressReport(2);
 }
 
 function withCategorizeStudents() {
-  categorizeStudents(1);
+  categorizeStudents(2);
 }
 function categorizeStudents(atExpectedMilestone) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();

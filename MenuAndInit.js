@@ -9,5 +9,6 @@ function onOpen() {
         .addItem('Generate Deep Work Session Assignments', 'createDeepWorkSessionAssignments')
         .addItem('Generate YAMM Email', 'generateYAMMEmail')
         .addItem('Generate Not Completed Assignments', 'updateForIncompleteAssignment')
+        .addItem('Create New User List', 'createUserList')
         .addToUi();
 }
