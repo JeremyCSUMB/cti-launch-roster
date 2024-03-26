@@ -64,61 +64,62 @@ function checkAttendance(pearData, springRow, emailCol, sisLoginIdCol, alternate
     return false;
 }
 function updateAttendanceRecords(sheet, rowIndex, date, didAttend) {
-    var headerRow = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
-    var lastAttendedCol = headerRow.indexOf('Last Attended Deep Work Session') + 1;
-    var attendedHistoryCol = headerRow.indexOf('Attended Deep Work Session History') + 1;
-    var missedHistoryCol = headerRow.indexOf('Missed Deep Work Session History') + 1;
-    var totalAttendedCol = headerRow.indexOf('Total # of Attended DW Sessions') + 1;
-    var totalMissedCol = headerRow.indexOf('Total # of Missed DW Sessions') + 1;
-    var firstNameCol = headerRow.indexOf('First Name') + 1;
-    var lastNameCol = headerRow.indexOf('Last Name') + 1;
-    var sisLoginIdCol = headerRow.indexOf('SIS Login ID') + 1;
-    var sessionLocationCol = headerRow.indexOf('Deep Work Session Location') + 1;
+  var headerRow = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+  var lastAttendedCol = headerRow.indexOf('Last Attended Deep Work Session') + 1;
+  var attendedHistoryCol = headerRow.indexOf('Attended Deep Work Session History') + 1;
+  var missedHistoryCol = headerRow.indexOf('Missed Deep Work Session History') + 1;
+  var totalAttendedCol = headerRow.indexOf('Total # of Attended DW Sessions') + 1;
+  var totalMissedCol = headerRow.indexOf('Total # of Missed DW Sessions') + 1;
+  var firstNameCol = headerRow.indexOf('First Name') + 1;
+  var lastNameCol = headerRow.indexOf('Last Name') + 1;
+  var sisLoginIdCol = headerRow.indexOf('SIS Login ID') + 1;
+  var sessionLocationCol = headerRow.indexOf('Deep Work Session Location') + 1;
 
-    if (lastAttendedCol <= 0 || attendedHistoryCol <= 0 || missedHistoryCol <= 0 || totalAttendedCol <= 0 || totalMissedCol <= 0 || firstNameCol <= 0 || lastNameCol <= 0 || sisLoginIdCol <= 0 || sessionLocationCol <= 0) {
-        throw new Error('Required columns not found.');
+  if (lastAttendedCol <= 0 || attendedHistoryCol <= 0 || missedHistoryCol <= 0 || totalAttendedCol <= 0 || totalMissedCol <= 0 || firstNameCol <= 0 || lastNameCol <= 0 || sisLoginIdCol <= 0 || sessionLocationCol <= 0) {
+    throw new Error('Required columns not found.');
+  }
+
+  var missedSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Missed Last Deep Work Session');
+  if (!missedSheet) {
+    missedSheet = SpreadsheetApp.getActiveSpreadsheet().insertSheet('Missed Last Deep Work Session');
+    missedSheet.appendRow(['First Name', 'Last Name', 'SIS Login ID', 'Date', 'Day', 'Deep Work Session Location']);
+  } else {
+    var lastRowDate;
+    if (missedSheet.getLastRow() > 1) {
+      lastRowDate = missedSheet.getRange(2, 4, missedSheet.getLastRow() - 1, 1).getValues().flat().pop();
     }
-
-    var missedSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Missed Last Deep Work Session');
-    if (!missedSheet) {
-        missedSheet = SpreadsheetApp.getActiveSpreadsheet().insertSheet('Missed Last Deep Work Session');
-        missedSheet.appendRow(['First Name', 'Last Name', 'SIS Login ID', 'Date', 'Day', 'Deep Work Session Location']);
-    } else {
-        var lastRowDate;
-        if (missedSheet.getLastRow() > 1) {
-            lastRowDate = missedSheet.getRange(2, 4, missedSheet.getLastRow() - 1, 1).getValues().flat().pop();
-        }
-        var lastRowDateObj = lastRowDate ? new Date(lastRowDate) : null;
-        var currentDateObj = new Date(date);
-        if (lastRowDateObj && lastRowDateObj.getDate() !== currentDateObj.getDate()) {
-            missedSheet.getDataRange().clearContent();
-        }
+    var lastRowDateObj = lastRowDate ? new Date(lastRowDate) : null;
+    var currentDateObj = new Date(date);
+    if (lastRowDateObj && lastRowDateObj.getDate() !== currentDateObj.getDate()) {
+      // Clear the content of the sheet, excluding the header row
+      missedSheet.getRange(2, 1, missedSheet.getLastRow() - 1, missedSheet.getLastColumn()).clearContent();
     }
+  }
 
-    var historyCol = didAttend ? attendedHistoryCol : missedHistoryCol;
-    var totalSessionsCol = didAttend ? totalAttendedCol : totalMissedCol;
-    var historyUpdate = date + ' (' + (didAttend ? 'Attended' : 'Missed') + ')';
-    var cellToUpdate = sheet.getRange(rowIndex + 1, historyCol);
-    var currentHistory = cellToUpdate.getValue();
-    var updatedHistory = currentHistory ? currentHistory + ', ' + historyUpdate : historyUpdate;
-    cellToUpdate.setValue(updatedHistory);
+  var historyCol = didAttend ? attendedHistoryCol : missedHistoryCol;
+  var totalSessionsCol = didAttend ? totalAttendedCol : totalMissedCol;
+  var historyUpdate = date + ' (' + (didAttend ? 'Attended' : 'Missed') + ')';
+  var cellToUpdate = sheet.getRange(rowIndex + 1, historyCol);
+  var currentHistory = cellToUpdate.getValue();
+  var updatedHistory = currentHistory ? currentHistory + ', ' + historyUpdate : historyUpdate;
+  cellToUpdate.setValue(updatedHistory);
 
-    var totalSessionsCell = sheet.getRange(rowIndex + 1, totalSessionsCol);
-    var currentTotal = totalSessionsCell.getValue() || 0;
-    totalSessionsCell.setValue(currentTotal + 1);
+  var totalSessionsCell = sheet.getRange(rowIndex + 1, totalSessionsCol);
+  var currentTotal = totalSessionsCell.getValue() || 0;
+  totalSessionsCell.setValue(currentTotal + 1);
 
-    if (didAttend) {
-        var lastAttendedCell = sheet.getRange(rowIndex + 1, lastAttendedCol);
-        lastAttendedCell.setValue(date);
-    } else {
-        var firstName = sheet.getRange(rowIndex + 1, firstNameCol).getValue();
-        var lastName = sheet.getRange(rowIndex + 1, lastNameCol).getValue();
-        var sisLoginId = sheet.getRange(rowIndex + 1, sisLoginIdCol).getValue();
-        var sessionLocation = sheet.getRange(rowIndex + 1, sessionLocationCol).getValue();
-        var dateFormatted = Utilities.formatDate(new Date(date), SpreadsheetApp.getActiveSpreadsheet().getSpreadsheetTimeZone(), 'MM/dd');
-        var dayFormatted = Utilities.formatDate(new Date(date), SpreadsheetApp.getActiveSpreadsheet().getSpreadsheetTimeZone(), 'EEE');
-        missedSheet.appendRow([firstName, lastName, sisLoginId, dateFormatted, dayFormatted, sessionLocation]);
-    }
+  if (didAttend) {
+    var lastAttendedCell = sheet.getRange(rowIndex + 1, lastAttendedCol);
+    lastAttendedCell.setValue(date);
+  } else {
+    var firstName = sheet.getRange(rowIndex + 1, firstNameCol).getValue();
+    var lastName = sheet.getRange(rowIndex + 1, lastNameCol).getValue();
+    var sisLoginId = sheet.getRange(rowIndex + 1, sisLoginIdCol).getValue();
+    var sessionLocation = sheet.getRange(rowIndex + 1, sessionLocationCol).getValue();
+    var dateFormatted = Utilities.formatDate(new Date(date), SpreadsheetApp.getActiveSpreadsheet().getSpreadsheetTimeZone(), 'MM/dd');
+    var dayFormatted = Utilities.formatDate(new Date(date), SpreadsheetApp.getActiveSpreadsheet().getSpreadsheetTimeZone(), 'EEE');
+    missedSheet.appendRow([firstName, lastName, sisLoginId, dateFormatted, dayFormatted, sessionLocation]);
+  }
 }
 function updateAttendanceAverage() {
   var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Spring 2024');
@@ -168,7 +169,7 @@ function processGuidedSessionAttendance() {
     var sisLoginIdCol = springData[0].indexOf('SIS Login ID');
     var alternateEmailCol = springData[0].indexOf('Alternate Email');
     var lastAttendedGuidedSessionCol = springData[0].indexOf('Last Attended Guided Session') + 1;
-    var totalAttendedGuidedSessionsCol = springData[0].indexOf('Guided Sessions Attendance Average') + 1;
+    var totalAttendedGuidedSessionsCol = springData[0].indexOf(' Total # of Attended Guided Sessions') + 1;
 
     if (emailCol < 0 || sisLoginIdCol < 0 || alternateEmailCol < 0 || lastAttendedGuidedSessionCol <= 0 || totalAttendedGuidedSessionsCol <= 0) {
         throw new Error('Required columns not found in sheets.');

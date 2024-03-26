@@ -30,3 +30,34 @@ function sendDeepWorkReminders() {
     MailApp.sendEmail(sisLoginId, subject, body);
   });
 }
+
+function sendMissedDeepWorkReminders() {
+  // Get the 'Missed Last Deep Work Session' sheet
+  const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = spreadsheet.getSheetByName('Missed Last Deep Work Session');
+
+  // Get the data from the sheet
+  const data = sheet.getDataRange().getValues();
+  const headers = data.shift(); // Remove header row
+
+  // Iterate through each row and send emails
+  data.forEach(row => {
+    const firstName = row[headers.indexOf('First Name')];
+    const lastName = row[headers.indexOf('Last Name')];
+    const sisLoginId = row[headers.indexOf('SIS Login ID')];
+    const dateString = row[headers.indexOf('Date')];
+    const date = new Date(dateString);
+    const day = row[headers.indexOf('Day')];
+    const location = row[headers.indexOf('Deep Work Session Location')];
+
+    // Format the date as "3/13"
+    const dateFormat = `${date.getMonth() + 1}/${date.getDate()}`;
+
+    // Construct the email message
+    const subject = `${firstName}, Quick Follow-Up on missed DW session ${day} ${dateFormat}`;
+    const body = `Hi ${firstName},\n\nI hope everything is okay on your end. I was looking at the attendance record and it looks like you missed the recent Deep Work Session on ${day}, ${dateFormat}. These sessions are super beneficial – I want to make sure you're not falling behind!\n\nHere are the details that I saw:\nMissed Deep Work Session: ${day} ${dateFormat}\nDeep Work Session Location: ${location}\n\nIf this was a mistake, please let me know right away. As always, let me know if you have any questions.\n\nKindly,`;
+
+    // Send the email
+    MailApp.sendEmail(sisLoginId, subject, body);
+  });
+}

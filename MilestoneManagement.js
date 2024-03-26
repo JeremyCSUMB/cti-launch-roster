@@ -185,11 +185,11 @@ function generateProgressReport(expectedMilestone) {
 }
 
 function processProgressReport() {
-  generateProgressReport(2);
+  generateProgressReport(3);
 }
 
 function withCategorizeStudents() {
-  categorizeStudents(2);
+  categorizeStudents(3);
 }
 function categorizeStudents(atExpectedMilestone) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -197,6 +197,7 @@ function categorizeStudents(atExpectedMilestone) {
   const data = sheet.getDataRange().getValues();
 
   // Find column indexes
+  const institutionIndex = data[0].indexOf('Institution');
   const attendanceIndex = data[0].indexOf('Attendance Average');
   const milestoneIndex = data[0].indexOf('Current Milestone');
   const categoryIndex = data[0].indexOf('Student Category') || data[0].length;
@@ -213,20 +214,27 @@ function categorizeStudents(atExpectedMilestone) {
 
   // Categorize students 
   for (let i = 1; i < data.length; i++) {
+    const institution = data[i][institutionIndex];
     const attendance = data[i][attendanceIndex];
     const milestone = data[i][milestoneIndex];
 
     let category, status;
+    let expectedMilestone = atExpectedMilestone;
+
+    // Adjust expectedMilestone for ECC institution
+    if (institution === 'ECC') {
+      expectedMilestone -= 1;
+    }
 
     // Logging for clarity
-    Logger.log("Student " + i + ": Attendance: " + attendance + ", Milestone: " + milestone);
+    Logger.log("Student " + i + ": Institution: " + institution + ", Attendance: " + attendance + ", Milestone: " + milestone);
 
-    if (milestone < atExpectedMilestone && attendance < 0.8) { 
+    if (milestone < expectedMilestone && attendance < 0.8) { 
       category = 'High Risk';
       status = 'Escalate';
 
-    } else if ((milestone < atExpectedMilestone && attendance < 0.9) || 
-               (milestone >= atExpectedMilestone && attendance < 0.8)) {
+    } else if ((milestone < expectedMilestone && attendance < 0.9) || 
+               (milestone >= expectedMilestone && attendance < 0.8)) {
       category = 'Moderate Risk';
       status = 'Active'; 
 
